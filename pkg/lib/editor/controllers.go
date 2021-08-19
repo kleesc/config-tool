@@ -210,6 +210,16 @@ func validateConfigBundle(opts *ServerOptions) func(http.ResponseWriter, *http.R
 			Certificates: configBundle.Certificates,
 		}
 
+		// Write database.pem needed for db validation, if any
+		if database_pem_bytes, ok := configBundle.Certificates["database.pem"]; ok {
+			err = ioutil.WriteFile("/tmp/database.pem", database_pem_bytes, 0644)
+			if err != nil {
+				log.Errorf(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
 		errors := loaded.Validate(opts)
 
 		var json = jsoniter.ConfigCompatibleWithStandardLibrary
